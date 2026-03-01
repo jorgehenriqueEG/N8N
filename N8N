@@ -1,0 +1,454 @@
+{
+  "name": "10/02/2026",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1-5"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -340,
+        820
+      ],
+      "notesInFlow": false,
+      "id": "5acfdaab-6e69-4d75-b83a-ee3ca8a832de"
+    },
+    {
+      "parameters": {
+        "functionCode": "const minSeconds = 3 * 60 * 60; \nconst maxSeconds = 5 * 60 * 60; \n\nconst delaySeconds = Math.floor(\n  Math.random() * (maxSeconds - minSeconds + 1) + minSeconds\n);\n\nreturn [{\n  json: {\n    ...$json, \n    delaySeconds\n  }\n}];\n"
+      },
+      "name": "Set Random Delay",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2900,
+        680
+      ],
+      "notesInFlow": false,
+      "id": "f08fcc6e-92cd-4a8e-8fd6-41635749f292",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "unit": "seconds"
+      },
+      "name": "Delay (Wait)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        3080,
+        800
+      ],
+      "id": "b1436364-4fe7-4d35-ba37-230bf195a9cf",
+      "webhookId": "c40fc3f6-8bb9-4710-9b56-1fada33a02a6"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];\n\nconst themes = [\n  'Unexplained Phenomenon',\n  'Corporate Internal Secrets',\n  'Moral Dilemma Story',\n  'Remote Wilderness Mystery',\n  'Workplace Psychological Tension',\n  'Reality Glitch Experience',\n  'Unexpected Compliance',\n  'Calculated Payback',\n  'Night Shift Incident',\n  'Encrypted Digital Encounter',\n  'Unexpected Inheritance Conflict',\n  'Neighbor Conflict Escalation',\n  'Cold Mystery File',\n  'Modern Urban Legend',\n  'Confidential Archive',\n  'Emotional Manipulation',\n  'Strategic Revenge',\n  'Hidden Truth',\n  'Dark Personal Past',\n  'Obsession Spiral',\n  'Paranoia Breakdown',\n  'Betrayal Revelation',\n  'The Unexpected Visitor',\n  'Chosen Family Conflict',\n  'Forbidden Emotional Bond',\n  'Double Life Exposure'\n];\n\n\n\nconst characters = [\n  'Alex (a local Barista)', 'Daniel (a Night Shift Security Guard)', 'Claudio (a father)',\n  'Ethan (a Tech Lead)', 'Nathan (a Park Ranger)', 'Ryan (a Long-Haul Trucker)',\n  'Elena (a Corporate Lawyer)', 'Sofia (a Medical Resident)', 'Maya (a College Student)',\n  'Noah (a Delivery Driver)', 'Leo (a Private Investigator)', 'Arthur (a Retired Veteran)',\n  'Henry (a Suburban Father)', 'Jack (a High School Teacher)', 'Officer Miller',\n  'Nurse Sarah', 'Detective Vance', 'A mysterious hitchhiker'\n];\n\nconst locations = [\n  'Abandoned Subway Station in a Coastal Metropolis',\n  'Empty Parking Garage in a Financial District',\n  'Rain-Soaked Streets of a Harbor City',\n  'Remote Cabin in a Mountain Range',\n  'Late-Night Convenience Store on a Desert Highway',\n  'Old Office Building in a Business District',\n  'Underground Storage Facility',\n  'Suburban Basement in a Quiet Neighborhood',\n  'Foggy Forest Road in a Northern Region',\n  'Remote Gas Station in a Deserted Area',\n  'Abandoned Farmhouse in the Countryside',\n  'Lakeside Cabin in a Cold Region',\n  'Deserted Roadside Motel',\n  'Mountain Highway During a Snowstorm',\n  'Wilderness Campsite at 3 AM',\n  'Luxury Penthouse in a Metropolitan Area',\n  'Small Town Diner After Midnight',\n  'Large Retail Store Parking Lot at Night'\n];\n\n\nconst ages = ['teen', 'young adult', 'adult', 'middle-aged', 'senior'];\nconst genders = ['male', 'female'];\n\n\nconst weights = [\n  { type: 'long', weight: 0.7 },\n  { type: 'part2', weight: 0.0 },\n  { type: 'short', weight: 0.3 }\n];\n\nfunction weightedRandom(items) {\n  const total = items.reduce((sum, item) => sum + item.weight, 0);\n  let rand = Math.random() * total;\n  for (const item of items) {\n    if (rand < item.weight) return item.type;\n    rand -= item.weight;\n  }\n  return items[0].type;\n}\n\nconst videoType = weightedRandom(weights);\n\nreturn [{\n  json: {\n  \n    theme: getRandom(themes),\n    character: getRandom(characters),\n    location: getRandom(locations),\n    age: getRandom(ages),\n    gender: getRandom(genders),\n    videoType: videoType,\n    \n    background_video_path: \"\" \n  }\n}];"
+      },
+      "name": "Choose Theme & Universe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1780,
+        820
+      ],
+      "notesInFlow": false,
+      "id": "3309e9d4-4065-465c-9aa6-691b8ff24a7d"
+    },
+    {
+      "parameters": {
+        "functionCode": "function cleanText(text) {\n  if (!text) return '';\n  return text\n    .replace(/&quot;|quot;|&#39;|&amp;|&lt;{};|&gt;/g, '')\n    .replace(/[^a-zA-Z0-9À-ÿ\\s]/g, '')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nconst theme = cleanText($json.theme);\nconst character = cleanText($json.character);\nconst location = cleanText($json.location);\nconst videoType = $json.videoType || 'short'; \n\nlet universeHook = '';\nif (character && location) {\n  universeHook = ` The main character is ${character}, and the story takes place in ${location}.`;\n} else if (character) {\n  universeHook = ` The main character is ${character}.`;\n} else if (location) {\n  universeHook = ` The story takes place in ${location}.`;\n}\n\nlet wordCountRule = '';\nlet durationRule = '';\nlet detailRule = '';\n\nif (videoType === 'long') {\n  wordCountRule = `\\n- WORD COUNT TARGET: 2000–7000 words.\\n- This is a story for a 7–25 minute audio at 1.5x speed.\\n- You MUST write EXTENSIVE and DETAILED text.\\n- If the output is short, it will fail.`;\n\n  durationRule = '7–25 minutes at 1.5x speed';\n  detailRule = `\\n- Use EXTREME VERBOSITY.\\n- Describe textures, smells, micro-expressions, thoughts, and surroundings in great detail.\\n- Expand every scene, every action, every dialogue internally.\\n- NEVER summarize. Show everything in vivid detail.`;\n} else {\n  wordCountRule = `\\n- WORD COUNT: 400–600 words.`;\n  durationRule = '1–3 minutes';\n  detailRule = '- Fast-paced, high tension, concise scenes.';\n}\n\nconst prompt = `\\nWrite a ${videoType.toUpperCase()} story in English about \"${theme}\".\\n\\nTARGET DURATION: ${durationRule}\\nREQUIRED VOLUME: ${wordCountRule}\\nWRITING STYLE: ${detailRule}\\n\\nABSOLUTE RULES (MANDATORY):\\n1. CLEAN TEXT ONLY: No quotes (\"), brackets ([ ]), asterisks (*), or hashtags (#).\\n2. NO SOUND CUES: Do not write [Tense Music] or [Door Creaks].\\n3. NO JSON OR TITLES: Output plain text only.\\n4. FIRST LINE: Must be the Hook only.\\n5. SECOND LINE: Must be exactly \"START_STORY\".\\n\\n${universeHook}\\n`;\n\nreturn [{\n  json: {\n    ...$json,\n    prompt,\n    videoType,\n    theme\n  }\n}];\n"
+      },
+      "name": "Create Story Prompt (ENGLISH)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3240,
+        800
+      ],
+      "notesInFlow": false,
+      "id": "bed2c0e4-89d4-4002-a3c9-65f4f584c3a1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawText = $json.text || $json.output || $json.full_text || $json.response || \"\";\n\nif (typeof rawText === 'object') {\n    rawText = rawText.full_text || rawText.text || JSON.stringify(rawText);\n}\n\nif (!rawText || rawText.length < 10) {\n    rawText = \"Error: Story generation failed. Please check the AI node output.\";\n}\n\nconst cleanText = String(rawText)\n    .replace(/^\\s*\\{\"full_text\":\\s*\"/, '') \n    .replace(/\"\\}\\s*$/, '')                \n    .replace(/\\\\n/g, '\\n');                 \n\nreturn [{\n    json: {\n        text: cleanText,      \n        videoType: $json.videoType || 'long'\n    }\n}];"
+      },
+      "name": "Parse Story & Create Hash",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        4920,
+        800
+      ],
+      "notesInFlow": false,
+      "id": "58e8e539-5a5f-416f-9368-19fc362e5b33"
+    },
+    {
+      "parameters": {
+        "jsCode": "const videoType = $json.videoType || 'short'; \n\nconst fullText = $json.full_text || '';\nconst textLength = fullText.length;\n\nconst wordCount = Number.isFinite($json.wordCount)\n  ? $json.wordCount\n  : fullText.trim().split(/\\s+/).length;\n\nlet minWords, maxWords, minLength, maxLength;\n\nif (videoType === 'long') {\n    minWords = 800;\n    maxWords = 3000;\n    minLength = 4000;\n    maxLength = 20000;\n} else {\n    minWords = 50;\n    maxWords = 1200;\n    minLength = 300;\n    maxLength = 6000;\n}\n\nconst checks = {\n    hasTitle: typeof $json.title === 'string' && $json.title.trim().length > 2,\n    hasStory: typeof fullText === 'string' && fullText.trim().length > minLength,\n    reasonableLength: textLength < maxLength,\n    hasHash: typeof $json.storyHash === 'string',\n    wordCount: wordCount >= minWords && wordCount <= maxWords\n};\n\nconst allPassed = Object.values(checks).every(Boolean);\n\nif (!allPassed) {\n    $json.validation = {\n        status: 'failed',\n        videoType,\n        checks,\n        wordCount,\n        textLength\n    };\n\n    return [{ json: $json }];\n}\n\n$json.validation = {\n    status: 'passed',\n    videoType,\n    wordCount,\n    textLength\n};\n\nreturn [{ json: $json }];\n"
+      },
+      "name": "Pre-Post Validation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        5100,
+        800
+      ],
+      "notesInFlow": false,
+      "id": "43408435-3f59-4e1a-b484-05a74857c8fe"
+    },
+    {
+      "parameters": {
+        "functionCode": "const requiredTags = ['#SubTales', '#storytime', '#shortstory'];\nconst videoType = $json.videoType;\n\nconst tags = [\n  ...new Set(\n    [].concat(\n      $json.tags || [],\n      requiredTags,\n      videoType === 'long'\n        ? ['#longstory', '#fullstory', '#deepdive']\n        : ['#shortstory', '#part1', '#shorts']\n    )\n  )\n];\n\nconst titleSafe = $json.title || \"untitled_story\";\nconst file_name = `${titleSafe.replace(/\\s+/g,'_')}_${videoType}.mp4`;\n\nconst videoTypeLabel = videoType === 'long' ? 'Full Story' : 'Part 1';\n\nconst tiktokCaption = videoType === 'long'\n  ? `${$json.title}\\n\\n🎧 FULL STORY\\nPerfect for background listening.\\n\\n💬 Comment what should happen next!\\n\\n#SubTales #fullstory #storytime #englishstory`\n  : `${$json.title}\\n\\n⚠️ PART 1\\n👉 Full story on the channel\\n\\nFollow to see the ending 👀\\n\\n#SubTales #part1 #shortstory #storytime #englishstory`;\n\nconst youtubeTitle = videoType === 'long'\n  ? `${$json.title} | Full Story | SubTales`\n  : `${$json.title} | Part 1 | SubTales`;\n\nconst youtubeDescription = videoType === 'long'\n  ? `${$json.description || $json.title}\\n\\n🎧 THIS IS THE FULL STORY\\n\\nThis video concludes the story introduced in the shorts.\\nPerfect for long listening sessions.\\n\\n🔔 Subscribe for daily full stories\\n💬 Comment what theme or ending you'd like next\\n\\n#SubTales #FullStory #Storytime #EnglishStory`\n  : `${$json.description || $json.title}\\n\\n⚠️ THIS STORY CONTINUES\\n\\n👉 Watch the FULL STORY on the channel\\n👉 Search by the same title\\n\\nFollow for Part 2 👀\\n\\n#SubTales #Part1 #ShortStory #Storytime #EnglishStory`;\n\nreturn [{\n  json: {\n    ...$json,\n    tags,\n    file_name,\n    tiktokCaption,\n    youtubeTitle,\n    youtubeDescription,\n    videoTypeLabel\n  }\n}];\n"
+      },
+      "name": "Generate Platform Content (ENGLISH)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        5360,
+        800
+      ],
+      "notesInFlow": false,
+      "id": "95930987-7c8c-4d64-bfbb-f72a0b9a1fbb"
+    },
+    {
+      "parameters": {
+        "functionCode": "const story = $json.full_text || '';\nconst cleanStory = story ? story.replace(/'/g, '') : ''; \nreturn [{\n    json: {\n        ...$json,\n        full_text: cleanStory\n    }\n}];"
+      },
+      "name": "Escape Quotes for Python",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        5660,
+        800
+      ],
+      "notesInFlow": false,
+      "id": "4bce7817-b9ab-4cf4-b2fb-fdf30f1afcc0"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst output = [];\n\nfor (let i = 0; i < items.length; i++) {\n    const text = items[i].json.text || \"\";\n    const index = items[i].json.index !== undefined ? items[i].json.index : i;\n    \n    output.push({\n        json: {\n            text: text, \n            index: index,\n            outputFile: `/tmp/subtales_audio/part_${index}.mp3`\n        },\n        binary: {\n            data: {\n                data: Buffer.from(text).toString('base64'),\n                fileName: `story_chunk.txt`, \n                fileExtension: 'txt',\n                mimeType: 'text/plain',\n            }\n        }\n    });\n}\n\nreturn output;"
+      },
+      "name": "Split Text for Audio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        140,
+        1140
+      ],
+      "notesInFlow": false,
+      "id": "2909b4cc-e95e-4398-988e-f5f7946e7128"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.text || \"\";\nconst index = $json.index || 0;\nconst videoType = $json.videoType || \"short\";\n\nreturn [\n  {\n    json: {\n      text,\n      index,\n      videoType,\n      outputFile: `/tmp/subtales_audio/part_${index}_${videoType}.mp3`\n    }\n  }\n];\n"
+      },
+      "name": "Prepare Audio Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        380,
+        1140
+      ],
+      "notesInFlow": false,
+      "id": "d30677d0-d3c2-4e74-946a-44a632e361af"
+    },
+    {
+      "parameters": {
+        "jsCode": "const storyData = $node[\"Parse Story & Create Hash\"].json;\nconst storyText = storyData.text || storyData.content || \"\";\nconst duration = $json.audio_duration_seconds || 60;\n\nconst cleanText = storyText\n  .replace(/\\r/g, \"\")\n  .replace(/\\n+/g, \" \")\n  .replace(/\\s+/g, \" \")\n  .trim();\n\nif (cleanText.length === 0) {\n    throw new Error(\"O texto da história não foi encontrado. Verifique o nó 'Parse Story & Create Hash'\");\n}\n\nconst words = cleanText.split(/\\s+/).filter(w => w.length > 0);\nconst totalWords = words.length;\nconst wps = (totalWords / duration) || 2.5;\nconst avgTimePerWord = 1 / wps;\n\nlet srtContent = \"\";\nlet currentTimeMs = 0;\nlet subtitleIndex = 1;\nconst wordsPerSubtitle = 5;\n\nconst formatTime = (ms) => {\n  const totalSeconds = Math.floor(ms / 1000);\n  const hours = Math.floor(totalSeconds / 3600);\n  const minutes = Math.floor((totalSeconds % 3600) / 60);\n  const seconds = totalSeconds % 60;\n  const milliseconds = Math.floor(ms % 1000);\n  return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')},${String(milliseconds).padStart(3,'0')}`;\n};\n\nfor (let i = 0; i < totalWords; i += wordsPerSubtitle) {\n  const subtitleWords = words.slice(i, i + wordsPerSubtitle);\n  const durationMs = subtitleWords.length * avgTimePerWord * 1000;\n  const endTimeMs = currentTimeMs + durationMs;\n\n  srtContent += `${subtitleIndex}\\n`;\n  srtContent += `${formatTime(currentTimeMs)} --> ${formatTime(endTimeMs)}\\n`;\n  srtContent += `${subtitleWords.join(\" \")}\\n\\n`;\n\n  currentTimeMs = endTimeMs;\n  subtitleIndex++;\n}\n\nreturn [{\n  json: {\n    ...$json,\n    srtText: srtContent\n  },\n  binary: {\n    data: {\n      data: Buffer.from(srtContent).toString('base64'),\n      fileName: 'legenda.srt',\n      mimeType: 'text/plain'\n    }\n  }\n}];"
+      },
+      "name": "Generate English Subtitles",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5840,
+        1140
+      ],
+      "notesInFlow": false,
+      "id": "26c5c339-b7e5-4ccb-8fb2-c49c3e50ce89"
+    },
+    {
+      "parameters": {},
+      "name": "Merge Story Context",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 1,
+      "position": [
+        240,
+        1580
+      ],
+      "notesInFlow": false,
+      "id": "d232a1f6-86c7-4544-8899-7d21a05c22ae"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  const title = item.json.title || 'Untitled_Story'; \n  const videoType = item.json.videoType || 'short';\n  \n  let clean_title = title.replace(/'/g, '').replace(/\"/g, '').replace(/\\\\/g, '').substring(0, 50);\n  \n  item.json.clean_title = clean_title;\n  item.json.final_filename = `${clean_title}_${videoType}.mp4`;\n}\n\nreturn $input.all();"
+      },
+      "name": "Prepare Final Video",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        20,
+        1580
+      ],
+      "notesInFlow": false,
+      "id": "db9bfd29-3ffc-4cdc-ac07-d938cf81d649"
+    },
+    {
+      "parameters": {
+        "command": "rm -rf /data/subtales_video/* && echo \"Limpeza concluída\""
+      },
+      "name": "Cleanup Temp Files",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        4820,
+        1580
+      ],
+      "notesInFlow": false,
+      "id": "44548f4c-834b-46b1-92b6-34ec063328c9"
+    },
+    {
+      "parameters": {
+        "command": "python3 -c \"\\nimport os, json\\nfrom gtts import gTTS\\n\\ntry:\\n    text_path = '/tmp/story_chunk.txt'\\n    audio_path = '/tmp/subtales_audio/final_part.mp3'\\n    os.makedirs(os.path.dirname(audio_path), exist_ok=True)\\n\\n    if not os.path.exists(text_path):\\n        raise FileNotFoundError(f'O arquivo {text_path} nao foi criado pelo nó anterior.')\\n\\n    with open(text_path, 'r', encoding='utf-8') as f:\\n        text_content = f.read()\\n\\n    tts = gTTS(text=text_content, lang='en', slow=False)\\n    tts.save(audio_path)\\n\\n    print(json.dumps({'audio_path': audio_path, 'status': 'success'}))\\n\\nexcept Exception as e:\\n    print(json.dumps({'error': str(e), 'status': 'failed'}))\\n\""
+      },
+      "name": "Execute gTTS Python",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        1140
+      ],
+      "notesInFlow": false,
+      "id": "ef096f21-eda2-4b94-b883-52de7ec05a86"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3440,
+        980
+      ],
+      "id": "aa50f575-f0a3-415b-916f-981721e0b7b8",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "LspYkUeBuGP3EJVY",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const pythonOutput = $node[\"Execute gTTS Python\"].json.stdout;\nlet data;\n\ntry {\n    data = typeof pythonOutput === 'string' ? JSON.parse(pythonOutput) : pythonOutput;\n} catch (e) {\n    const pathMatch = pythonOutput.match(/\\/tmp\\/subtales_audio\\/part_\\d+\\.mp3/);\n    data = {\n        audio_path: pathMatch ? pathMatch[0] : null,\n        status: pathMatch ? \"success\" : \"error\"\n    };\n}\n\nreturn [{\n    json: {\n        audio_path: data.audio_path,\n        status: data.status,\n        index: $node[\"Generate File Metadata\"].json.index,\n        videoType: \"long\"\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3140,
+        1140
+      ],
+      "id": "f1e1442b-2b6d-4432-a749-d7bcdbcddcb7",
+      "name": "Fix gTTS Output"
+    },
+    {
+      "parameters": {
+        "command": "=ffprobe -v error \\\n-show_entries format=duration \\\n-of default=noprint_wrappers=1:nokey=1 \\\n\"{{$json.final_audio_path}}\"\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        4600,
+        1200
+      ],
+      "id": "7c6dd588-5a86-41db-9fa4-5f32ade2bfe5",
+      "name": "Get Audio Duration (FFprobe)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst audio_paths = [];\nlet videoType = 'short';\n\nfor (const item of items) {\n  if (item.json.audio_path) {\n    audio_paths.push(item.json.audio_path);\n  }\n  if (item.json.videoType) {\n    videoType = item.json.videoType;\n  }\n}\n\nif (audio_paths.length === 0) {\n  throw new Error('Nenhum audio_path encontrado para agregação');\n}\n\nreturn [\n  {\n    json: {\n      audio_paths,\n      videoType\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3460,
+        1140
+      ],
+      "id": "9e454f6a-d881-41a8-b395-9d1327292fd0",
+      "name": "Aggregate Audio Paths"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $json.stdout || \"\";\nconst jsonMatch = stdout.match(/\\{.*\\}/);\n\nif (jsonMatch) {\n  try {\n    const parsed = JSON.parse(jsonMatch[0]);\n    return [{ json: parsed }];\n  } catch (e) {\n    throw new Error(\"Erro ao parsear JSON: \" + jsonMatch[0]);\n  }\n}\n\nreturn [{ json: { error: \"Nenhum JSON encontrado no stdout\", raw: stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4440,
+        1140
+      ],
+      "id": "5b8edcff-dc59-4dbe-9be8-1fa89550d2fa",
+      "name": "Parse Final Audio JSON"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        5180,
+        1140
+      ],
+      "id": "ca844852-c02b-4bd7-b171-47b0d8f9a539",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const duration = Number($json.stdout ?? $json.audio_duration_seconds);\n\nreturn [\n  {\n    json: {\n      final_audio_path: $json.final_audio_path,\n      videoType: $json.videoType && !$json.videoType.includes('{')\n        ? $json.videoType\n        : 'short',\n      audio_duration_seconds: duration\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5480,
+        1140
+      ],
+      "id": "846875cc-acda-40e4-b020-9f9ddd87649d",
+      "name": "Parse Audio Duration"
+    },
+    {
+      "parameters": {
+        "command": "=set -e\\n\\nmkdir -p /data/subtales_video\\n\\nVIDEO_FUNDO=\"{{ $('Select Background Video1').first().json.backgroundVideo }}\"\\nAUDIO_FINAL=\"{{ $json.final_audio_path }}\"\\nVIDEO_TYPE=\"{{ $json.videoType || 'short' }}\"\\nLEGENDA=\"/tmp/legenda.srt\"\\n\\nif [ -z \"$VIDEO_FUNDO\" ] || [ \"$VIDEO_FUNDO\" = \"undefined\" ]; then\\n  exit 1\\nfi\\n\\nif [ -z \"$AUDIO_FINAL\" ]; then\\n  exit 1\\nfi\\n\\nOUT=\"/data/subtales_video/video_final_${VIDEO_TYPE}_$(date +%s).mp4\"\\n\\nffmpeg -y \\\\\\n-stream_loop -1 \\\\\\n-i \"$VIDEO_FUNDO\" \\\\\\n-i \"$AUDIO_FINAL\" \\\\\\n-filter_complex \"\\n[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30[bg];\\n[bg]subtitles='$LEGENDA':force_style='Alignment=10,FontName=Arial,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=0,MarginV=70'[vid]\\n\" \\\\\\n-map \"[vid]\" -map 1:a \\\\\\n-c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p \\\\\\n-c:a copy \\\\\\n-shortest \\\\\\n\"$OUT\"\\n\\necho \"{\\\"video_path\\\": \\\"$OUT\\\", \\\"video_type\\\": \\\"$VIDEO_TYPE\\\"}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        560,
+        1580
+      ],
+      "id": "c14d2f16-bb7e-4a73-a02a-d1fb91ef340e",
+      "name": "Create Final Video",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $json.stdout;\n\nif (!stdout) {\n  throw new Error('No stdout received from Create Final Video');\n}\n\nconst videoPath = stdout.trim();\n\nreturn [\n  {\n    json: {\n      video_path: videoPath,\n      video_type: 'short'\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        980,
+        1580
+      ],
+      "id": "5dadc291-ad52-45eb-8a5e-494c2f323557",
+      "name": "Extract Video Path"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "86bb824d-039f-4525-a34d-d388b1af9a32",
+              "name": "video_path",
+              "value": "{{ $json.video_path.replace(/\\s+$/, '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        780,
+        1580
+      ],
+      "id": "39d8604f-c8be-477c-b02e-a4a035ddb9ee",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const videoType = $json.videoType || 'short';\nconst rawDuration = $json.stdout || $json.backgroundDuration;\nconst duration = parseFloat(rawDuration);\n\nlet min, max;\n\nif (videoType === 'short' || videoType === 'part2') {\n  min = 20;\n  max = 5400;\n} else {\n  min = 480;\n  max = 7200;\n}\n\nif (isNaN(duration)) {\n  throw new Error('Não foi possível ler a duração do vídeo de fundo.');\n}\n\nif (duration < min || duration > max) {\n  throw new Error(`Vídeo inválido: ${duration}s para ${videoType}. Limites: ${min}s-${max}s.`);\n}\n\nreturn [{\n  json: {\n    ...$json,\n    videoType,\n    backgroundDuration: duration,\n    status: \"Validado com sucesso\"\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4800,
+        1200
+      ],
+      "id": "a3613808-eefc-41dc-91e4-4f37c47a42ea",
+      "name": "Validate Background Video Duration"
+    },
+    {
+      "parameters": {
+        "command": "=ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{{ $json.backgroundVideo }}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2480,
+        800
+      ],
+      "id": "abbca345-e6d6-495d-a05c-88060017a6a2",
+      "name": "Get Background Video Duration"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/tmp/story_chunk.txt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2360,
+        1140
+      ],
+      "id": "2a6e15a0-b2dd-446d-8863-bb2b2f68bc9b",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst output = [];\n\nfor (let i = 0; i < items.length; i++) {\n    const text = items[i].json.text || \"\";\n    const index = items[i].json.index || i;\n    \n    output.push({\n        json: {\n            index: index,\n            outputFile: `/tmp/subtales_audio/part_${index}.mp3`\n        },\n        binary: {\n            data: {\n                data: Buffer.from(text).toString('base64'),\n                fileName: `story_${index}.txt`,\n                fileExtension: 'txt',\n                mimeType: 'text/plain',\n            }\n        }\n    });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        1140
+      ],
+      "id": "4717f4fd-2ed3-4501-bea8-4e27bdfe3b64",
+      "name": "Generate File Metadata"
+    },
+    {
+      "parameters": {
+        "command": "=export NODE_PATH=/usr/local/lib/node_modules:/usr/local/lib/node_modules/n8n/node_modules\\n\\ncat <<EOF > /tmp/tiktok_upload.js\\nconst { chromium } = require('playwright');\\nconst fs = require('fs');\\n\\nasync function main() {\\n    const videoPath = process.argv[2];\\n    const hashtags = process.argv[3];\\n    const sessionPath = '/home/node/.n8n/session_tiktok.json';\\n\\n    const browser = await chromium.launch({\\n        headless: true,\\n        executablePath: '/usr/bin/chromium-browser',\\n        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']\\n    });\\n\\n    const context = await browser.newContext({\\n        storageState: fs.existsSync(sessionPath) ? sessionPath : undefined,\\n        viewport: { width: 1280, height: 720 }\\n    });\\n\\n    const page = await context.newPage();\\n\\n    try {\\n        await page.goto('https://www.tiktok.c"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        1580
+      ],
+      "id": "tiktok_upload_node",
+      "name": "TikTok Upload"
+    }
+  ]
+}
